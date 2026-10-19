@@ -247,23 +247,22 @@ h1[tabindex="-1"]:focus,h2[tabindex="-1"]:focus{outline:none}
 /* ============================================================
    MOBILE
    ============================================================ */
-.sticky-cta{
-  position:fixed;left:0;right:0;bottom:0;z-index:70;
-  padding:12px 16px calc(12px + env(safe-area-inset-bottom));
-  background:rgba(255,255,255,.96);
-  -webkit-backdrop-filter:saturate(180%) blur(12px);
-  backdrop-filter:saturate(180%) blur(12px);
-  border-top:1px solid var(--pink-line);
-  box-shadow:0 -8px 26px -18px rgba(179,20,92,.5);
-}
-.sticky-cta .btn{box-shadow:none}
-
 @media (max-width:640px){
   .shell{padding-inline:18px}
   .card{padding:26px 20px;border-radius:20px}
   .btn{width:100%}
   .option{padding:16px}
   main{padding-block:18px}
+}
+/* very short screens (older/small phones) — tighten so no scrolling is needed */
+@media (max-height:640px){
+  main{padding-block:10px}
+  .card{padding:20px 18px}
+  .card-head{margin-bottom:18px}
+  .options{gap:9px}
+  .option{padding:13px 14px}
+  .progress-note{margin:14px 0 14px}
+  .btn{padding:15px 26px}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
@@ -304,7 +303,6 @@ h1[tabindex="-1"]:focus,h2[tabindex="-1"]:focus{outline:none}
   </div>
 </main>
 
-<div class="sticky-cta" id="sticky-cta" hidden></div>
 <div class="confetti-layer" id="confetti" aria-hidden="true"></div>
 
 <!-- ===== OUTCOME MODAL — win / lose ===== -->
@@ -382,20 +380,6 @@ function pick(id){
     : selected.size + ' of ' + need + ' selected';
   $('#progress-fill').style.width =
     Math.min(100, (selected.size / QUIZ.options.length) * 100) + '%';
-
-  syncSticky();
-}
-
-function syncSticky(){
-  const sticky = $('#sticky-cta');
-  const show = window.matchMedia('(max-width: 640px)').matches
-            && !$('#submit-btn').disabled
-            && $('#modal').hidden
-            && !locked;
-  if (!show){ sticky.hidden = true; sticky.innerHTML = ''; return; }
-  sticky.innerHTML = $('#submit-btn').outerHTML;
-  sticky.hidden = false;
-  sticky.querySelector('button').addEventListener('click', checkAnswer);
 }
 
 /* ============================================================
@@ -408,7 +392,6 @@ function checkAnswer(){
     return;
   }
   locked = true;
-  hideSticky();
 
   let correct = 0;
   QUIZ.options.forEach(opt => {
@@ -425,11 +408,6 @@ function checkAnswer(){
   const win = correct === QUIZ.options.filter(o => o.correct).length && !pickedWrong;
 
   setTimeout(() => openModal(win, correct), 460);
-}
-
-function hideSticky(){
-  const s = $('#sticky-cta');
-  s.hidden = true; s.innerHTML = '';
 }
 
 /* ============================================================
@@ -507,11 +485,6 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault();
     $('#modal-again').focus();
   }
-});
-
-let lastW = window.innerWidth;
-window.addEventListener('resize', () => {
-  if (window.innerWidth !== lastW){ lastW = window.innerWidth; syncSticky(); }
 });
 
 $('#options').addEventListener('keydown', (e) => {
